@@ -69,7 +69,7 @@ public class LoginFragment extends Fragment {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Navigation.findNavController(view).navigate(R.id.mainFragment);
+                Navigation.findNavController(view).navigate(R.id.mainFragment_loginNav);
             }
         });
 

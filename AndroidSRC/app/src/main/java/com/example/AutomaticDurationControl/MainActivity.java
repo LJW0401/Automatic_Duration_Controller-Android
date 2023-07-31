@@ -6,6 +6,7 @@ import android.os.Bundle;
 /*开发过程中用到的库*/
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
 /*---------------*/
 public class MainActivity extends AppCompatActivity {
 
@@ -18,5 +19,6 @@ public class MainActivity extends AppCompatActivity {
         NavHostFragment navHostFragment =
                 (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.mainFragmentContainerView);
         NavController navController = navHostFragment.getNavController();
+
     }
 }

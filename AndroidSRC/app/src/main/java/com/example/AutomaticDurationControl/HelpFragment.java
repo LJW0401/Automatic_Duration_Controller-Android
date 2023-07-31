@@ -3,25 +3,17 @@ package com.example.AutomaticDurationControl;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
-import androidx.navigation.ui.NavigationUI;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-/*开发过程中用到的库*/
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.NavigationUI;
-/*---------------*/
-
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link MainFragment#newInstance} factory method to
+ * Use the {@link HelpFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MainFragment extends Fragment {
+public class HelpFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -32,7 +24,7 @@ public class MainFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    public MainFragment() {
+    public HelpFragment() {
         // Required empty public constructor
     }
 
@@ -42,11 +34,11 @@ public class MainFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment MainFragment.
+     * @return A new instance of fragment HelpFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MainFragment newInstance(String param1, String param2) {
-        MainFragment fragment = new MainFragment();
+    public static HelpFragment newInstance(String param1, String param2) {
+        HelpFragment fragment = new HelpFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -67,15 +59,6 @@ public class MainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_main, container, false);
-
-        // 设置导航控制器
-//        NavHostFragment navHostFragment =
-//                (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.mainFragmentContainerView);
-//        NavController navController = navHostFragment.getNavController();
-//        BottomNavigationView bottomNav = findViewById(R.id.bottomMainNavigationView);
-//        NavigationUI.setupWithNavController(bottomNav, navController);
-
-        return view;
+        return inflater.inflate(R.layout.fragment_help, container, false);
     }
 }

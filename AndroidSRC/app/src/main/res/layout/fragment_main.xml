@@ -16,7 +16,7 @@
         app:menu="@menu/menu_main" />
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragmentContainerView"
+        android:id="@+id/fragmentMainContainerView"
         android:name="com.example.AutomaticDurationControl.FunctionSelectionFragment"
         android:layout_width="409dp"
         android:layout_height="649dp"

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/navigation_home"
+        android:id="@+id/mainMenu_FunctionSelection"
         android:icon="@android:drawable/ic_dialog_dialer"
         android:title="功能选项" />
     <item
-        android:id="@+id/navigation_dashboard"
+        android:id="@+id/mainMenu_Help"
         android:icon="@android:drawable/ic_menu_help"
         android:title="帮助" />
     <item
-        android:id="@+id/navigation_notifications"
+        android:id="@+id/mainMenu_AccountInformation"
         android:icon="@android:drawable/ic_dialog_info"
         android:title="账号信息" />
 </menu>

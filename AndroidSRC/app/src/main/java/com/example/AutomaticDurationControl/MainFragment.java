@@ -10,11 +10,8 @@ import android.view.ViewGroup;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 /*开发过程中用到的库*/
-import androidx.fragment.app.FragmentContainerView;
-
 import android.view.MenuItem;
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentTransaction;
 /*---------------*/
 
@@ -79,7 +76,7 @@ public class MainFragment extends Fragment {
         // 设置底部导航栏点击监听
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            public boolean onNavigationItemSelected(MenuItem item) {
                 // 处理菜单项选择事件
                 int id = item.getItemId();
                 navigateToFragment(id); // 调用自定义方法来处理导航

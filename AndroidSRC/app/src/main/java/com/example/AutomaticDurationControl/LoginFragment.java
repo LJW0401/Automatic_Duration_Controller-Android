@@ -1,16 +1,13 @@
 package com.example.AutomaticDurationControl;
 
 import android.os.Bundle;
-
 import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-/*开发过程中用到的库*/
 import android.widget.Button;
 import androidx.navigation.Navigation;
-/*---------------*/
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link LoginFragment#newInstance} factory method to

@@ -27,13 +27,9 @@ import java.util.Date;
 public class FloatingWindowService extends Service {
     int LAYOUT_FLAG;
     float height,width;
-    View mFloatingView;
-    TextView TextView_Duration;
     WindowManager windowManager;
-    ImageButton Button_Pause_Play;
-    ImageButton Button_CloseFloatingWindow;
-    Drawable ic_media_play;
-    Drawable ic_delete;
+
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -41,13 +37,28 @@ public class FloatingWindowService extends Service {
         // 例如创建悬浮窗视图，设置视图的样式、位置等
     }
 
+    Drawable Drawable_ic_media_play;
+    Drawable Drawable_ic_media_pause;
+    Drawable Drawable_ic_delete;
+    /**
+     * @brief          获取系统资源包括图标
+     * @author         小企鹅
+     * @return         none
+     */
     public void getAndroidResources(){
-        //获取系统资源
-        ic_media_play = getResources().getDrawable(android.R.drawable.ic_media_play);
-        ic_media_play = getResources().getDrawable(android.R.drawable.ic_media_pause);
-        ic_delete = getResources().getDrawable(android.R.drawable.ic_delete);
+        Drawable_ic_media_play = getResources().getDrawable(android.R.drawable.ic_media_play);
+        Drawable_ic_media_pause = getResources().getDrawable(android.R.drawable.ic_media_pause);
+        Drawable_ic_delete = getResources().getDrawable(android.R.drawable.ic_delete);
     }
-
+    View mFloatingView;
+    TextView TextView_Duration;
+    ImageButton Button_Pause_Play;
+    ImageButton Button_CloseFloatingWindow;
+    /**
+     * @brief          获取页面布局中的组件
+     * @author         小企鹅
+     * @return         none
+     */
     public void getLayoutAssembly(){
         //inflate widget layout
         mFloatingView = LayoutInflater.from(this).inflate(R.layout.layout_floating_window, null);
@@ -87,9 +98,9 @@ public class FloatingWindowService extends Service {
         mFloatingView.setVisibility(View.VISIBLE);
 
         //设置开始按钮图片
-        Button_Pause_Play.setImageDrawable(ic_media_play); // 替换系统内置的媒体播放图标资源
+        Button_Pause_Play.setImageDrawable(Drawable_ic_media_play); // 替换系统内置的媒体播放图标资源
         //设置关闭按钮图片
-        Button_CloseFloatingWindow.setImageDrawable(ic_delete); // 替换系统内置的媒体播放图标资源
+        Button_CloseFloatingWindow.setImageDrawable(Drawable_ic_delete); // 替换系统内置的媒体播放图标资源
 
         height = windowManager.getDefaultDisplay().getHeight();
         width = windowManager.getDefaultDisplay().getWidth();
@@ -104,7 +115,7 @@ public class FloatingWindowService extends Service {
 //            }
 //        },10);
 
-        //点击关闭按钮后关闭悬浮窗并回到主界面
+        //点击关闭按钮后关闭悬浮窗
         Button_CloseFloatingWindow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -112,7 +123,9 @@ public class FloatingWindowService extends Service {
                 closeFloatingWindowAndReturnToMain();
             }
         });
-
+        //将视图传递给AutoClickService服务
+        AutoClickService autoClickService = new AutoClickService(); // 创建 AutoClickService 的实例
+        autoClickService.setFloatingView(mFloatingView); // 将 mFloatingView 传递给 AutoClickService
         //拖动悬浮窗时改变悬浮窗位置
         TextView_Duration.setOnTouchListener(new View.OnTouchListener(){
             int initialX,initialY;
@@ -184,14 +197,18 @@ public class FloatingWindowService extends Service {
         // 如果服务支持绑定，可以在这里返回绑定的接口对象
         return null;
     }
-
+    /**
+     * @brief          关闭悬浮窗
+     * @author         小企鹅
+     * @return         none
+     */
     private void closeFloatingWindowAndReturnToMain() {
         // 移除悬浮窗视图
         windowManager.removeView(mFloatingView);
         // 回到主页面的操作
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
+//        Intent intent = new Intent(this, MainActivity.class);
+//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        startActivity(intent);
         // 停止当前服务
         stopSelf();
     }

@@ -100,13 +100,18 @@ public class FunctionSelectionFragment extends Fragment {
                     Intent serviceIntent = new Intent(getActivity(), FloatingWindowService.class);
                     getActivity().startService(serviceIntent);
                     // 关闭当前的Activity（主窗口）
-                    getActivity().finish();
+//                    getActivity().finish();
                 }
             }
         });
         return view;
     }
 
+    /**
+     * @brief          跳转设置以获取无障碍服务权限
+     * @author         小企鹅
+     * @return         none
+     */
     public void getAccessiblePermissions(){
         if (isAccessibilityServiceEnabled()){
             Toast.makeText(requireContext(), "已经有无障碍的权限啦！", Toast.LENGTH_SHORT).show();
@@ -116,6 +121,11 @@ public class FunctionSelectionFragment extends Fragment {
         }
     }
 
+    /**
+     * @brief          跳转设置以获取悬浮窗权限
+     * @author         小企鹅
+     * @return         none
+     */
     public void getFloatingWindowPermission(){
         if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.M) {
             if (!Settings.canDrawOverlays(requireContext())) {//check for alert window permission
@@ -146,6 +156,11 @@ public class FunctionSelectionFragment extends Fragment {
         }
     }
 
+    /**
+     * @brief          检测是否获取了无障碍服务的权限
+     * @author         小企鹅
+     * @return         none
+     */
     private boolean isAccessibilityServiceEnabled() {
         String serviceName = getContext().getPackageName() + "/" + AutoClickService.class.getCanonicalName();
         int accessibilityEnabled = 0;

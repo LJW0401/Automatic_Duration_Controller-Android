@@ -4,10 +4,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -89,15 +87,33 @@ public class FunctionSelectionFragment extends Fragment {
             }
         });
         //TODO: 点击选择的功能后生成悬浮窗口并关闭主窗口
-        //设置选择后生成悬浮窗
+        //设置点击后生成悬浮窗并关闭当前窗口
         Button Button_YouthLearning = view.findViewById(R.id.Button_YouthLearning);
-
+        Button_YouthLearning.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view){
+                if(!Settings.canDrawOverlays(requireContext()))
+                {
+                    Toast.makeText(requireContext(), "没有悬浮窗的权限QAQ", Toast.LENGTH_SHORT).show();
+                }else{
+                    // 点击按钮后启动FloatingWindowService悬浮窗服务
+                    Intent serviceIntent = new Intent(getActivity(), FloatingWindowService.class);
+                    getActivity().startService(serviceIntent);
+                    // 关闭当前的Activity（主窗口）
+                    getActivity().finish();
+                }
+            }
+        });
         return view;
     }
 
     public void getAccessiblePermissions(){
-        Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-        startActivityForResult(intent, ACCESSIBLE_PERMISSION_REQUEST_CODE);
+        if (isAccessibilityServiceEnabled()){
+            Toast.makeText(requireContext(), "已经有无障碍的权限啦！", Toast.LENGTH_SHORT).show();
+        }else {
+            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+            startActivityForResult(intent, ACCESSIBLE_PERMISSION_REQUEST_CODE);
+        }
     }
 
     public void getFloatingWindowPermission(){

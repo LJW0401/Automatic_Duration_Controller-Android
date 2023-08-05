@@ -15,7 +15,7 @@
         android:layout_height="50dp"
         android:layout_marginStart="20dp"
         android:text="设置悬浮窗权限"
-        android:visibility="invisible"
+        android:visibility="visible"
         app:layout_constraintStart_toEndOf="@+id/Button_getAccessiblePermissions"
         app:layout_constraintTop_toTopOf="@+id/Button_getAccessiblePermissions" />
 

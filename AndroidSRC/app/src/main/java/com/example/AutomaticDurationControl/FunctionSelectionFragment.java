@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -121,7 +122,44 @@ public class FunctionSelectionFragment extends Fragment {
                 Toast.makeText(requireContext(), "谢谢你给我悬浮窗的权限", Toast.LENGTH_SHORT).show();
             }
         } else if (requestCode == ACCESSIBLE_PERMISSION_REQUEST_CODE) {
-
+            if (isAccessibilityServiceEnabled()){
+                Toast.makeText(requireContext(), "谢谢你给我无障碍的权限", Toast.LENGTH_SHORT).show();
+            }else{
+                Toast.makeText(requireContext(), "请给我无障碍的权限嘛QAQ", Toast.LENGTH_SHORT).show();
+            }
         }
     }
+
+    private boolean isAccessibilityServiceEnabled() {
+        String serviceName = getContext().getPackageName() + "/" + AutoClickService.class.getCanonicalName();
+        int accessibilityEnabled = 0;
+        try {
+            accessibilityEnabled = Settings.Secure.getInt(
+                    getContext().getContentResolver(),
+                    Settings.Secure.ACCESSIBILITY_ENABLED);
+        } catch (Settings.SettingNotFoundException e) {
+            // 如果发生异常，说明无障碍服务未开启
+            return false;
+        }
+
+        TextUtils.SimpleStringSplitter colonSplitter = new TextUtils.SimpleStringSplitter(':');
+        if (accessibilityEnabled == 1) {
+            String settingValue = Settings.Secure.getString(
+                    getContext().getContentResolver(),
+                    Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+
+            if (settingValue != null) {
+                colonSplitter.setString(settingValue);
+                while (colonSplitter.hasNext()) {
+                    String accessibilityService = colonSplitter.next();
+                    if (accessibilityService.equalsIgnoreCase(serviceName)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
 }

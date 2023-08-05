@@ -86,19 +86,19 @@ public class FunctionSelectionFragment extends Fragment {
                 getFloatingWindowPermission();
             }
         });
-        //TODO: 点击选择的功能后生成悬浮窗口并关闭主窗口
         //设置点击后生成悬浮窗并关闭当前窗口
         Button Button_YouthLearning = view.findViewById(R.id.Button_YouthLearning);
         Button_YouthLearning.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view){
-                if(!Settings.canDrawOverlays(requireContext()))
+                if(!isAccessibilityServiceEnabled())
                 {
-                    Toast.makeText(requireContext(), "没有悬浮窗的权限QAQ", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "没有无障碍服务的权限QAQ", Toast.LENGTH_SHORT).show();
                 }else{
-                    // 点击按钮后启动FloatingWindowService悬浮窗服务
-                    Intent serviceIntent = new Intent(getActivity(), FloatingWindowService.class);
-                    getActivity().startService(serviceIntent);
+                    //TODO : 显示悬浮窗
+                    //发送显示悬浮窗的广播
+                    Intent intent = new Intent("SHOW_FLOATING_WINDOW");
+                    getActivity().sendBroadcast(intent);
                     // 关闭当前的Activity（主窗口）
 //                    getActivity().finish();
                 }

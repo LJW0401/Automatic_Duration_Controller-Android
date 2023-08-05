@@ -3,32 +3,43 @@ package com.example.AutomaticDurationControl;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.GestureDescription;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Path;
+import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.view.View;
 
-import androidx.core.app.NotificationCompat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
 
 public class AutoClickService extends AccessibilityService {
-    private final String TAG = getClass().getCanonicalName();
+    int IS_CLICKING = 0;
+    int IS_NOT_CLICKING = 1;
+    int AutoClickState = IS_NOT_CLICKING;
 
-    View mFloatingView;
-    public void setFloatingView(View floatingView) {
-        // 在这里你可以保存 mFloatingView，或者直接使用其中的按钮
-        // 例如：Button_Pause_Play = floatingView.findViewById(R.id.Button_Pause_Play);
-        mFloatingView = floatingView;
-    }
+    private final String TAG = getClass().getCanonicalName();
+    final Handler handler = new Handler();
+    float height,width;
+    int LAYOUT_FLAG;
+    WindowManager windowManager;
+
+
     Drawable Drawable_ic_media_play;
     Drawable Drawable_ic_media_pause;
     Drawable Drawable_ic_delete;
@@ -43,6 +54,7 @@ public class AutoClickService extends AccessibilityService {
         Drawable_ic_delete = getResources().getDrawable(android.R.drawable.ic_delete);
         Log.d(TAG, "已获取系统资源包括图标");
     }
+    View mFloatingView;
     TextView TextView_Duration;
     ImageButton Button_Pause_Play;
     ImageButton Button_CloseFloatingWindow;
@@ -52,27 +64,199 @@ public class AutoClickService extends AccessibilityService {
      * @return         none
      */
     public void getLayoutAssembly(){
+        mFloatingView = LayoutInflater.from(this).inflate(R.layout.layout_floating_window, null);
         TextView_Duration = (TextView) mFloatingView.findViewById(R.id.TextView_Duration);
         Button_Pause_Play = (ImageButton) mFloatingView.findViewById(R.id.Button_Pause_Play);
         Button_CloseFloatingWindow = (ImageButton) mFloatingView.findViewById(R.id.Button_CloseFloatingWindow);
         Log.d(TAG, "已获取页面布局中的组件");
     }
+
     @Override
     protected void onServiceConnected() {
         getLayoutAssembly();
         getAndroidResources();
-        showNotification();
-        //设置启停按钮的功能
-        Button_Pause_Play.setOnClickListener(new View.OnClickListener() {
+
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O)
+        {
+            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        }else{
+            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_PHONE;
+        }
+
+        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                LAYOUT_FLAG,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT
+        );
+        //注册广播接收器
+        ShowFloatingWindowBroadcastReceiver receiver = new ShowFloatingWindowBroadcastReceiver();
+        IntentFilter filter = new IntentFilter("SHOW_FLOATING_WINDOW");
+        registerReceiver(receiver, filter);
+
+        //初始化位置
+        layoutParams.gravity = Gravity.TOP|Gravity.RIGHT;
+        layoutParams.x = 0;
+        layoutParams.y = 100;
+
+        //添加悬浮窗的窗口内容并显示出来
+        windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        windowManager.addView(mFloatingView,layoutParams);
+        mFloatingView.setVisibility(View.VISIBLE);
+        //获取悬浮窗的高度和宽度
+        height = windowManager.getDefaultDisplay().getHeight();
+        width = windowManager.getDefaultDisplay().getWidth();
+
+        Configure_Button_CloseFloatingWindow();
+        Configure_Button_Pause_Play();
+        Configure_TextView_Duration(layoutParams);
+    }
+    /**
+     * @brief          设置悬浮窗中Button_CloseFloatingWindow的相关属性
+     * @author         小企鹅
+     * @return         none
+     */
+    private void Configure_Button_CloseFloatingWindow() {
+        //设置关闭按钮图片
+        Button_CloseFloatingWindow.setImageDrawable(Drawable_ic_delete); // 替换系统内置的媒体删除图标资源
+        //点击关闭按钮后停止自动点击，状态归0，关闭悬浮窗
+        Button_CloseFloatingWindow.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                Button_Pause_Play.setImageDrawable(Drawable_ic_media_pause); // 替换系统内置的媒体播放图标资源
-                Toast.makeText(getApplicationContext(), "按钮被点击啦", Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "按钮被点击啦");
+            public void onClick(View v) {
+                handler.removeCallbacksAndMessages(null);//清除点击任务
+                AutoClickState = IS_NOT_CLICKING;//状态归0
+                Button_Pause_Play.setImageDrawable(Drawable_ic_media_play); // 替换系统内置的媒体播放图标资源
+                // 点击关闭按钮后，关闭悬浮窗
+                closeFloatingWindowAndReturnToMain();
             }
         });
     }
+    /**
+     * @brief          设置悬浮窗中Button_Pause_Play的相关属性
+     * @author         小企鹅
+     * @return         none
+     */
+    private void Configure_Button_Pause_Play(){
+        //设置开始按钮图片
+        Button_Pause_Play.setImageDrawable(Drawable_ic_media_play); // 替换系统内置的媒体播放图标资源
+        Button_Pause_Play.setOnClickListener(new View.OnClickListener() {
+            int click_x = 50;
+            int click_y = 500;
+            @Override
+            public void onClick(View view) {
+                if (AutoClickState == IS_CLICKING){
+                    AutoClickState = IS_NOT_CLICKING;
+                    Button_Pause_Play.setImageDrawable(Drawable_ic_media_play);
+                    Log.d(TAG, "停止自动点击");
+                    handler.removeCallbacksAndMessages(null);
+                    click_x = 50;
+                    click_y = 500;
+                } else if (AutoClickState == IS_NOT_CLICKING) {
+                    AutoClickState = IS_CLICKING;
+                    Button_Pause_Play.setImageDrawable(Drawable_ic_media_pause);
+                    Log.d(TAG, "正在自动点击");
+                    //在指定区域内自动点击
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            //TODO : 测量一下具体的点击位置与按钮的大小，重新设置点击区域，防止按不到
+                            if (click_y > 1000){
+                                click_y = 500;
+                                click_x += 50;//点击位置右移50
+                            }
+                            if (click_x > 200){
+                                //状态归位
+                                click_y = 500;
+                                click_x = 50;
+                            }
+                            performClick(click_x,click_y);
+                            click_y += 100;
+                            handler.postDelayed(this,150);
+                        }
+                    },1);
 
+                }
+            }
+        });
+    }
+    /**
+     * @brief          设置悬浮窗中TextView_Duration的相关属性
+     * @author         小企鹅
+     * @return         none
+     */
+    private void Configure_TextView_Duration(WindowManager.LayoutParams layoutParams){
+        //拖动文本框时改变悬浮窗位置
+        TextView_Duration.setOnTouchListener(new View.OnTouchListener(){
+            int initialX,initialY;
+            float initialTouchX,initialTouchY;
+            long startClickTime;
+
+            int MAX_CLICK_DURATION=200;
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent){
+
+                switch (motionEvent.getAction())
+                {
+                    case MotionEvent.ACTION_DOWN:
+
+                        startClickTime = Calendar.getInstance().getTimeInMillis();
+
+                        initialX = layoutParams.x;
+                        initialY = layoutParams.y;
+
+                        //touch position
+                        initialTouchX = motionEvent.getRawX();
+                        initialTouchY = motionEvent.getRawY();
+
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        long clickDuration = Calendar.getInstance().getTimeInMillis()-startClickTime;
+
+                        layoutParams.x = initialX+(int) (initialTouchX-motionEvent.getRawX());
+                        layoutParams.y = initialY+(int) (motionEvent.getRawY()-initialTouchY);
+
+                        if(clickDuration<MAX_CLICK_DURATION)
+                        {
+                            Log.d(TAG, "Time:"+TextView_Duration.getText().toString());
+                        }else{
+                            //remove widget
+                            if(layoutParams.y>(height*0.6))
+                            {
+                                stopSelf();
+                            }
+                        }
+
+                        return true;
+                    case MotionEvent.ACTION_MOVE:
+                        //calulate X & Y coordinates of view
+                        layoutParams.x = initialX+(int) (initialTouchX-motionEvent.getRawX());
+                        layoutParams.y = initialY+(int) (motionEvent.getRawY()-initialTouchY);
+
+                        //update layout width new coordinates
+                        windowManager.updateViewLayout(mFloatingView, layoutParams);
+
+                        return true;
+                }
+                return false;
+            }
+        });
+    }
+    /**
+     * @brief          关闭悬浮窗
+     * @author         小企鹅
+     * @return         none
+     */
+    private void closeFloatingWindowAndReturnToMain() {
+        // 移除悬浮窗视图
+        mFloatingView.setVisibility(View.INVISIBLE);
+        // 回到主页面的操作
+//        Intent intent = new Intent(this, MainActivity.class);
+//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        startActivity(intent);
+        // 停止当前服务
+//        stopSelf();
+    }
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         // 处理无障碍事件
@@ -92,10 +276,11 @@ public class AutoClickService extends AccessibilityService {
             path.moveTo(x, y);
 
             GestureDescription gestureDescription = new GestureDescription.Builder()
-                    .addStroke(new GestureDescription.StrokeDescription(path, 100L, 100L))
+                    .addStroke(new GestureDescription.StrokeDescription(path, 50L, 50L))//设置点击的参数
                     .build();
 
-            dispatchGesture(gestureDescription, gestureCallback, null);
+//            dispatchGesture(gestureDescription, gestureCallback, null);
+            dispatchGesture(gestureDescription, null, null);
         }
     }
 
@@ -119,39 +304,16 @@ public class AutoClickService extends AccessibilityService {
         @Override
         public void onCancelled(GestureDescription gestureDescription) {
             // 模拟点击取消
-            Log.d(TAG, "取消点击");
+            Log.d(TAG, "点击失败");
         }
     };
-    private static final int NOTIFICATION_ID = 1;
-    private static final String CHANNEL_ID = "auto_click_channel";
-    private static final CharSequence CHANNEL_NAME = "Auto Click Service Channel";
-    /**
-     * @brief          使用通知栏保活，防止被杀
-     * @author         小企鹅
-     * @return         none
-     */
-    private void showNotification() {
-        // Create a notification channel for Android 8.0 and above
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME,
-                    NotificationManager.IMPORTANCE_DEFAULT);
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
+    public class ShowFloatingWindowBroadcastReceiver extends BroadcastReceiver{
+        @Override
+        public void onReceive(Context context, Intent intent){
+            if (intent.getAction().equals("SHOW_FLOATING_WINDOW")){
+                Log.d(TAG, "接收到显示悬浮窗的广播");
+                mFloatingView.setVisibility(View.VISIBLE);
+            }
         }
-
-        // Create an intent to launch the MainActivity when the notification is clicked
-        Intent intent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
-
-        // Build the notification
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("自动刷时长器")
-                .setContentText("正在后台运行")
-                .setSmallIcon(R.drawable.ic_launcher_foreground) // 这里使用对应的资源ID
-                .setContentIntent(pendingIntent)
-                .build();
-
-        // Start the service in foreground mode with the notification
-        startForeground(NOTIFICATION_ID, notification);
     }
 }

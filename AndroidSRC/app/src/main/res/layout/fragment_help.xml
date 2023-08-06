@@ -8,18 +8,50 @@
     tools:context=".HelpFragment">
 
     <!-- TODO: Update blank fragment layout -->
+
     <TextView
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="帮助"
+        android:textSize="50sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.5"
-        android:textSize="50sp"
-        />
+        app:layout_constraintVertical_bias="0.872" />
+
+    <TextView
+        android:id="@+id/textView13"
+        android:layout_width="350dp"
+        android:layout_height="150dp"
+        android:text="
+如何使用：\n
+首先打开无障碍服务的权限\n
+然后选择需要的服务，就会在右上角弹出一个悬浮窗\n
+然后打开青年大学习的视频，点击悬浮窗中的开始按钮即可代理完成青年大学习\n\n
+点击'X'可以关闭服务与悬浮窗
+"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.229" />
+
+    <TextView
+        android:id="@+id/textView14"
+        android:layout_width="350dp"
+        android:layout_height="150dp"
+        android:layout_marginTop="56dp"
+        android:text="
+注：\n
+1.这只是一个实现基础功能的demo\n
+2.未来要增加计时功能，自动关闭服务，防止占用过多资源\n
+3.未来要增加账号服务\n
+4.未做过太多的测试，可能有一堆BUG并且资源占用情况未知[doge]
+"
+        app:layout_constraintStart_toStartOf="@+id/textView13"
+        app:layout_constraintTop_toBottomOf="@+id/textView13" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -12,6 +12,7 @@ import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Handler;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -71,6 +72,8 @@ public class AutoClickService extends AccessibilityService {
         Log.d(TAG, "已获取页面布局中的组件");
     }
 
+    int screenWidth;
+    int screenHeight;
     @Override
     protected void onServiceConnected() {
         getLayoutAssembly();
@@ -103,10 +106,18 @@ public class AutoClickService extends AccessibilityService {
         //添加悬浮窗的窗口内容并显示出来
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         windowManager.addView(mFloatingView,layoutParams);
-        mFloatingView.setVisibility(View.VISIBLE);
+        mFloatingView.setVisibility(View.INVISIBLE);
         //获取悬浮窗的高度和宽度
         height = windowManager.getDefaultDisplay().getHeight();
         width = windowManager.getDefaultDisplay().getWidth();
+
+        // 创建DisplayMetrics对象以获取屏幕尺寸信息
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        windowManager.getDefaultDisplay().getMetrics(displayMetrics);// 从WindowManager中获取默认Display的屏幕尺寸
+        // 获取屏幕宽度和高度（以像素为单位）
+        screenWidth = displayMetrics.widthPixels;
+        screenHeight = displayMetrics.heightPixels;
+
 
         Configure_Button_CloseFloatingWindow();
         Configure_Button_Pause_Play();
@@ -141,8 +152,8 @@ public class AutoClickService extends AccessibilityService {
         //设置开始按钮图片
         Button_Pause_Play.setImageDrawable(Drawable_ic_media_play); // 替换系统内置的媒体播放图标资源
         Button_Pause_Play.setOnClickListener(new View.OnClickListener() {
-            int click_x = 50;
-            int click_y = 500;
+            int click_x = screenWidth/2;
+            int click_y = (int) Math.round(screenHeight*0.79);
             @Override
             public void onClick(View view) {
                 if (AutoClickState == IS_CLICKING){
@@ -150,29 +161,29 @@ public class AutoClickService extends AccessibilityService {
                     Button_Pause_Play.setImageDrawable(Drawable_ic_media_play);
                     Log.d(TAG, "停止自动点击");
                     handler.removeCallbacksAndMessages(null);
-                    click_x = 50;
-                    click_y = 500;
+                    click_x = screenWidth/2;
+                    click_y = (int) Math.round(screenHeight*0.79);
                 } else if (AutoClickState == IS_NOT_CLICKING) {
                     AutoClickState = IS_CLICKING;
                     Button_Pause_Play.setImageDrawable(Drawable_ic_media_pause);
                     Log.d(TAG, "正在自动点击");
                     //在指定区域内自动点击
+                    //目前的方案是直接点击'确定'按钮和'继续听讲'按钮
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            //TODO : 测量一下具体的点击位置与按钮的大小，重新设置点击区域，防止按不到
-                            if (click_y > 1000){
-                                click_y = 500;
-                                click_x += 50;//点击位置右移50
+                            if ((int) Math.round(screenHeight*0.87) < click_y){
+//                                click_y = (int) Math.round(screenHeight*0.90);
+                                click_x = screenWidth-20;
                             }
-                            if (click_x > 200){
+                            if (click_y > (int) Math.round(screenHeight*0.98)){
                                 //状态归位
-                                click_y = 500;
-                                click_x = 50;
+                                click_x = screenWidth/2;
+                                click_y = (int) Math.round(screenHeight*0.79);
                             }
                             performClick(click_x,click_y);
-                            click_y += 100;
-                            handler.postDelayed(this,150);
+                            click_y += 50;
+                            handler.postDelayed(this,400);
                         }
                     },1);
 
@@ -218,7 +229,8 @@ public class AutoClickService extends AccessibilityService {
 
                         if(clickDuration<MAX_CLICK_DURATION)
                         {
-                            Log.d(TAG, "Time:"+TextView_Duration.getText().toString());
+                            // 输出屏幕尺寸信息
+                            Log.d("ScreenSize", "屏幕宽度：" + screenWidth + "px，屏幕高度：" + screenHeight + "px");
                         }else{
                             //remove widget
                             if(layoutParams.y>(height*0.6))

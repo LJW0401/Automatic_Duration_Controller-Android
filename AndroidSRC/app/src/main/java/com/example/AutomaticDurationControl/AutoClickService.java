@@ -19,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,55 +39,76 @@ public class AutoClickService extends AccessibilityService {
     WindowManager windowManager;
 
 
+    int screenWidth;
+    int screenHeight;
     Drawable Drawable_ic_media_play;
     Drawable Drawable_ic_media_pause;
     Drawable Drawable_ic_delete;
     Drawable Drawable_ic_input_add;
     /**
-     * @brief          获取系统资源包括图标
+     * @brief          获取系统资源和设备信息
      * @author         小企鹅
      * @return         none
      */
     public void getAndroidResources(){
+        //获取安卓自带的资源图标
         Drawable_ic_media_play = getResources().getDrawable(android.R.drawable.ic_media_play);
         Drawable_ic_media_pause = getResources().getDrawable(android.R.drawable.ic_media_pause);
         Drawable_ic_delete = getResources().getDrawable(android.R.drawable.ic_delete);
         Drawable_ic_input_add = getResources().getDrawable(android.R.drawable.ic_input_add);
         Log.d(TAG, "已获取系统资源包括图标");
+        //获取设备屏幕尺寸信息
+        DisplayMetrics displayMetrics = new DisplayMetrics();// 创建DisplayMetrics对象以获取屏幕尺寸信息
+        windowManager.getDefaultDisplay().getMetrics(displayMetrics);// 从WindowManager中获取默认Display的屏幕尺寸
+        // 获取屏幕宽度和高度（以像素为单位）
+        screenWidth = displayMetrics.widthPixels;
+        screenHeight = displayMetrics.heightPixels;
     }
     View mFloatingView;
     TextView TextView_Duration;
     ImageButton Button_Pause_Play;
     ImageButton Button_CloseFloatingWindow;
     ImageButton Button_AddRectangleArea;
+
+    View FloatingView_AddRectangleArea;
+    DrawRectangleView View_drawRectangleArea;
+    Button Button_Sure;
     /**
-     * @brief          获取页面布局中的组件
+     * @brief          获取获取页面布局中的组件
      * @author         小企鹅
      * @return         none
      */
     public void getLayoutAssembly(){
+        //填充功能栏并获取其中的组件
         mFloatingView = LayoutInflater.from(this).inflate(R.layout.layout_floating_window, null);
         TextView_Duration = (TextView) mFloatingView.findViewById(R.id.TextView_Duration);
         Button_Pause_Play = (ImageButton) mFloatingView.findViewById(R.id.Button_Pause_Play);
         Button_CloseFloatingWindow = (ImageButton) mFloatingView.findViewById(R.id.Button_CloseFloatingWindow);
         Button_AddRectangleArea = (ImageButton) mFloatingView.findViewById(R.id.Button_AddRectangleArea);
+        //填充矩形框绘制栏并获取其中的组件
+        FloatingView_AddRectangleArea = LayoutInflater.from(this).inflate(R.layout.layout_floating_add_rectangle_area, null);
+        View_drawRectangleArea = (DrawRectangleView) FloatingView_AddRectangleArea.findViewById(R.id.View_drawRectangleArea);
+        Button_Sure = (Button) FloatingView_AddRectangleArea.findViewById(R.id.Button_Sure);
         Log.d(TAG, "已获取页面布局中的组件");
     }
 
-    int screenWidth;
-    int screenHeight;
+
     @Override
     protected void onServiceConnected() {
-        getLayoutAssembly();
-        getAndroidResources();
-
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O)
         {
             LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         }else{
             LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_PHONE;
         }
+        //创建视窗管理器
+        windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
+        //获取基础信息
+        getLayoutAssembly();
+        getAndroidResources();
+
+        //功能栏悬浮窗的布局属性设置
         WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -94,36 +116,54 @@ public class AutoClickService extends AccessibilityService {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT
         );
-        //注册广播接收器
-        ShowFloatingWindowBroadcastReceiver receiver = new ShowFloatingWindowBroadcastReceiver();
-        IntentFilter filter = new IntentFilter("SHOW_FLOATING_WINDOW");
-        registerReceiver(receiver, filter);
-
         //初始化位置
         layoutParams.gravity = Gravity.TOP|Gravity.RIGHT;
         layoutParams.x = 0;
         layoutParams.y = 100;
-
-        //添加悬浮窗的窗口内容并显示出来
-        windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        //添加工具栏的窗口内容并显示出来
         windowManager.addView(mFloatingView,layoutParams);
         mFloatingView.setVisibility(View.INVISIBLE);
         //获取悬浮窗的高度和宽度
         height = windowManager.getDefaultDisplay().getHeight();
         width = windowManager.getDefaultDisplay().getWidth();
 
-        // 创建DisplayMetrics对象以获取屏幕尺寸信息
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        windowManager.getDefaultDisplay().getMetrics(displayMetrics);// 从WindowManager中获取默认Display的屏幕尺寸
-        // 获取屏幕宽度和高度（以像素为单位）
-        screenWidth = displayMetrics.widthPixels;
-        screenHeight = displayMetrics.heightPixels;
+        //框选矩形区域属性设置
+        WindowManager.LayoutParams Params_FloatingView_AddRectangleArea = new WindowManager.LayoutParams(
+                screenWidth,
+                screenHeight,
+                LAYOUT_FLAG,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT
+        );
+        //添加框选页面并不显示
+        windowManager.addView(FloatingView_AddRectangleArea,Params_FloatingView_AddRectangleArea);
+        FloatingView_AddRectangleArea.setVisibility(View.INVISIBLE);
 
+        //注册广播接收器
+        ShowFloatingWindowBroadcastReceiver receiver = new ShowFloatingWindowBroadcastReceiver();
+        IntentFilter filter = new IntentFilter("SHOW_FLOATING_WINDOW");
+        registerReceiver(receiver, filter);
 
+        //设置相关组件属性
         Configure_Button_CloseFloatingWindow();
         Configure_Button_Pause_Play();
         Configure_Button_AddRectangleArea();
         Configure_TextView_Duration(layoutParams);
+        Configure_Button_Sure();
+    }
+    /**
+     * @brief          设置框选区域的悬浮窗中'确定'按钮的相关属性
+     * @author         小企鹅
+     * @return         none
+     */
+    private void Configure_Button_Sure() {
+        //TODO : 点击按钮后更新自动点击区域的位置信息
+        Button_Sure.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FloatingView_AddRectangleArea.setVisibility(View.INVISIBLE);
+            }
+        });
     }
     /**
      * @brief          设置悬浮窗中Button_AddRectangleArea的相关属性
@@ -131,12 +171,11 @@ public class AutoClickService extends AccessibilityService {
      * @return         none
      */
     private void Configure_Button_AddRectangleArea() {
-        //TODO : 点击按钮后创建一个悬浮窗页面，内部包含一个绘图组件，一个确定按钮，绘制一个覆盖全屏幕的绿色半透明矩形，当用手指绘制矩形时更新矩形绿色半透明矩形区域
         Button_AddRectangleArea.setImageDrawable(Drawable_ic_input_add); // 替换系统内置的媒体删除图标资源
         Button_AddRectangleArea.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "框选区域功能还在开发中", Toast.LENGTH_SHORT).show();
+                FloatingView_AddRectangleArea.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -277,14 +316,9 @@ public class AutoClickService extends AccessibilityService {
      * @return         none
      */
     private void closeFloatingWindowAndReturnToMain() {
-        // 移除悬浮窗视图
+        // 设置悬浮窗视图为不可见
         mFloatingView.setVisibility(View.INVISIBLE);
-        // 回到主页面的操作
-//        Intent intent = new Intent(this, MainActivity.class);
-//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//        startActivity(intent);
-        // 停止当前服务
-//        stopSelf();
+        FloatingView_AddRectangleArea.setVisibility(View.INVISIBLE);
     }
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {

@@ -5,15 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ImageButton
-        android:id="@+id/Button_Pause_Play"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:gravity="center"
-        app:layout_constraintStart_toStartOf="@+id/TextView_Duration"
-        app:layout_constraintTop_toBottomOf="@+id/TextView_Duration"
-        app:srcCompat="@android:drawable/ic_media_play" />
-
     <TextView
         android:id="@+id/TextView_Duration"
         android:layout_width="60dp"
@@ -26,6 +17,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.308" />
+    <ImageButton
+        android:id="@+id/Button_Pause_Play"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:gravity="center"
+        app:layout_constraintStart_toStartOf="@+id/TextView_Duration"
+        app:layout_constraintTop_toBottomOf="@+id/TextView_Duration"
+        app:srcCompat="@android:drawable/ic_media_play" />
 
     <ImageButton
         android:id="@+id/Button_CloseFloatingWindow"
@@ -33,6 +32,14 @@
         android:layout_height="60dp"
         android:gravity="center"
         app:layout_constraintStart_toStartOf="@+id/Button_Pause_Play"
-        app:layout_constraintTop_toBottomOf="@+id/Button_Pause_Play"
+        app:layout_constraintTop_toBottomOf="@+id/Button_AddRectangleArea"
         app:srcCompat="@android:drawable/ic_delete" />
+
+    <ImageButton
+        android:id="@+id/Button_AddRectangleArea"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        app:layout_constraintStart_toStartOf="@+id/Button_Pause_Play"
+        app:layout_constraintTop_toBottomOf="@+id/Button_Pause_Play"
+        app:srcCompat="@android:drawable/ic_input_add" />
 </androidx.constraintlayout.widget.ConstraintLayout>

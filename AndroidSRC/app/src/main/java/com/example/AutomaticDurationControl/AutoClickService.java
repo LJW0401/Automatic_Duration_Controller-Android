@@ -23,10 +23,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.view.View;
-
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 
 
 public class AutoClickService extends AccessibilityService {
@@ -44,6 +41,7 @@ public class AutoClickService extends AccessibilityService {
     Drawable Drawable_ic_media_play;
     Drawable Drawable_ic_media_pause;
     Drawable Drawable_ic_delete;
+    Drawable Drawable_ic_input_add;
     /**
      * @brief          获取系统资源包括图标
      * @author         小企鹅
@@ -53,12 +51,14 @@ public class AutoClickService extends AccessibilityService {
         Drawable_ic_media_play = getResources().getDrawable(android.R.drawable.ic_media_play);
         Drawable_ic_media_pause = getResources().getDrawable(android.R.drawable.ic_media_pause);
         Drawable_ic_delete = getResources().getDrawable(android.R.drawable.ic_delete);
+        Drawable_ic_input_add = getResources().getDrawable(android.R.drawable.ic_input_add);
         Log.d(TAG, "已获取系统资源包括图标");
     }
     View mFloatingView;
     TextView TextView_Duration;
     ImageButton Button_Pause_Play;
     ImageButton Button_CloseFloatingWindow;
+    ImageButton Button_AddRectangleArea;
     /**
      * @brief          获取页面布局中的组件
      * @author         小企鹅
@@ -69,6 +69,7 @@ public class AutoClickService extends AccessibilityService {
         TextView_Duration = (TextView) mFloatingView.findViewById(R.id.TextView_Duration);
         Button_Pause_Play = (ImageButton) mFloatingView.findViewById(R.id.Button_Pause_Play);
         Button_CloseFloatingWindow = (ImageButton) mFloatingView.findViewById(R.id.Button_CloseFloatingWindow);
+        Button_AddRectangleArea = (ImageButton) mFloatingView.findViewById(R.id.Button_AddRectangleArea);
         Log.d(TAG, "已获取页面布局中的组件");
     }
 
@@ -121,7 +122,23 @@ public class AutoClickService extends AccessibilityService {
 
         Configure_Button_CloseFloatingWindow();
         Configure_Button_Pause_Play();
+        Configure_Button_AddRectangleArea();
         Configure_TextView_Duration(layoutParams);
+    }
+    /**
+     * @brief          设置悬浮窗中Button_AddRectangleArea的相关属性
+     * @author         小企鹅
+     * @return         none
+     */
+    private void Configure_Button_AddRectangleArea() {
+        //TODO : 点击按钮后创建一个悬浮窗页面，内部包含一个绘图组件，一个确定按钮，绘制一个覆盖全屏幕的绿色半透明矩形，当用手指绘制矩形时更新矩形绿色半透明矩形区域
+        Button_AddRectangleArea.setImageDrawable(Drawable_ic_input_add); // 替换系统内置的媒体删除图标资源
+        Button_AddRectangleArea.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(), "框选区域功能还在开发中", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
     /**
      * @brief          设置悬浮窗中Button_CloseFloatingWindow的相关属性

@@ -15,7 +15,7 @@
         android:layout_height="50dp"
         android:layout_marginStart="20dp"
         android:text="设置悬浮窗权限"
-        android:visibility="invisible"
+        android:visibility="visible"
         app:layout_constraintStart_toEndOf="@+id/Button_getAccessiblePermissions"
         app:layout_constraintTop_toTopOf="@+id/Button_getAccessiblePermissions" />
 
@@ -33,8 +33,10 @@
         android:id="@+id/textView11"
         android:layout_width="320dp"
         android:layout_height="wrap_content"
-        android:text="使用本程序需要使用到手机的部分权限：\n
-无障碍服务权限 来实现点击功能\n"
+        android:text="
+使用本程序需要使用到手机的部分权限：\n
+无障碍服务权限 来实现点击功能\n
+悬浮窗服务权限 \n"
 
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"

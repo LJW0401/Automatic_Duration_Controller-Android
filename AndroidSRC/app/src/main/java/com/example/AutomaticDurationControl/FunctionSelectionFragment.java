@@ -95,9 +95,11 @@ public class FunctionSelectionFragment extends Fragment {
                 {
                     Toast.makeText(requireContext(), "没有无障碍服务的权限QAQ", Toast.LENGTH_SHORT).show();
                 }else{
-                    //TODO : 显示悬浮窗
+                    int statusBarHeight = getResources().getDimensionPixelSize(
+                            getResources().getIdentifier("status_bar_height", "dimen", "android"));//获取顶部信息栏高度
                     //发送显示悬浮窗的广播
                     Intent intent = new Intent("SHOW_FLOATING_WINDOW");
+                    intent.putExtra("StatusBarHeight",statusBarHeight);
                     getActivity().sendBroadcast(intent);
                     // 关闭当前的Activity（主窗口）
 //                    getActivity().finish();

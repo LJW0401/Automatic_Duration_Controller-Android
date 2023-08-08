@@ -151,22 +151,33 @@ public class AutoClickService extends AccessibilityService {
         Configure_TextView_Duration(layoutParams);
         Configure_Button_Sure();
     }
+    int SelectedAreaStartX=0;
+    int SelectedAreaStartY=0;
+    int SelectedAreaWidth=0;
+    int SelectedAreaHeight=0;
     /**
      * @brief          设置框选区域的悬浮窗中'确定'按钮的相关属性
      * @author         小企鹅
      * @return         none
      */
     private void Configure_Button_Sure() {
-        //TODO : 点击按钮后更新自动点击区域的位置信息
         Button_Sure.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                FloatingView_AddRectangleArea.setVisibility(View.INVISIBLE);
+                FloatingView_AddRectangleArea.setVisibility(View.INVISIBLE);//关闭框选区域的页面
+                //更新框选的区域
+                SelectedAreaStartX = View_drawRectangleArea.getRectangleStartX();
+                SelectedAreaStartY = View_drawRectangleArea.getRectangleStartY();
+                SelectedAreaWidth = View_drawRectangleArea.getRectangleWidth();
+                SelectedAreaHeight = View_drawRectangleArea.getRectangleHeight();
+
+//                Log.d(TAG,"点击末端Y："+(SelectedAreaHeight+SelectedAreaStartY));
+//                Log.d(TAG, "绘制时的末端Y位置:"+View_drawRectangleArea.getRectangleEndY());
             }
         });
     }
     /**
-     * @brief          设置悬浮窗中Button_AddRectangleArea的相关属性
+     * @brief          设置悬浮窗中Button_AddRectangleArea（框选矩形区域按钮）的相关属性
      * @author         小企鹅
      * @return         none
      */
@@ -180,7 +191,7 @@ public class AutoClickService extends AccessibilityService {
         });
     }
     /**
-     * @brief          设置悬浮窗中Button_CloseFloatingWindow的相关属性
+     * @brief          设置悬浮窗中Button_CloseFloatingWindow（关闭悬浮窗按钮）的相关属性
      * @author         小企鹅
      * @return         none
      */
@@ -200,7 +211,7 @@ public class AutoClickService extends AccessibilityService {
         });
     }
     /**
-     * @brief          设置悬浮窗中Button_Pause_Play的相关属性
+     * @brief          设置悬浮窗中Button_Pause_Play（开始与停止按钮）的相关属性
      * @author         小企鹅
      * @return         none
      */
@@ -208,38 +219,49 @@ public class AutoClickService extends AccessibilityService {
         //设置开始按钮图片
         Button_Pause_Play.setImageDrawable(Drawable_ic_media_play); // 替换系统内置的媒体播放图标资源
         Button_Pause_Play.setOnClickListener(new View.OnClickListener() {
-            int click_x = screenWidth/2;
-            int click_y = (int) Math.round(screenHeight*0.79);
+            int click_x;
+            int click_y;
+            int BUTTON_SURE = 0;
+            int BUTTON_CONTINUE = 1;
+            int ClickButtonState = BUTTON_SURE;
             @Override
             public void onClick(View view) {
-                if (AutoClickState == IS_CLICKING){
+                if (AutoClickState == IS_CLICKING){//切换到停止状态
                     AutoClickState = IS_NOT_CLICKING;
                     Button_Pause_Play.setImageDrawable(Drawable_ic_media_play);
                     Log.d(TAG, "停止自动点击");
                     handler.removeCallbacksAndMessages(null);
-                    click_x = screenWidth/2;
-                    click_y = (int) Math.round(screenHeight*0.79);
-                } else if (AutoClickState == IS_NOT_CLICKING) {
+
+                } else if (AutoClickState == IS_NOT_CLICKING) {//切换到自动点击状态
                     AutoClickState = IS_CLICKING;
                     Button_Pause_Play.setImageDrawable(Drawable_ic_media_pause);
                     Log.d(TAG, "正在自动点击");
-                    //在指定区域内自动点击
+                    Log.d(TAG, "end Y :"+(SelectedAreaStartY+SelectedAreaHeight));
+                    //初始化点击位置
+                    click_x = SelectedAreaStartX+SelectedAreaWidth/2;
+                    click_y = StatusBarHeight + SelectedAreaStartY + (int) Math.round(SelectedAreaHeight*0.82);
+                    //在指定区域（框选的矩形区域）内自动点击
                     //目前的方案是直接点击'确定'按钮和'继续听讲'按钮
+                    //创建2个点击状态，分别点击确定和继续听讲
                     handler.postDelayed(new Runnable() {
+                        int deltaY = (int) (50*(SelectedAreaHeight/1550.0));
+//                        int deltaY = 10;
                         @Override
                         public void run() {
-                            if ((int) Math.round(screenHeight*0.87) < click_y){
-//                                click_y = (int) Math.round(screenHeight*0.90);
-                                click_x = screenWidth-20;
+                            if (click_y>StatusBarHeight+SelectedAreaStartY+SelectedAreaHeight-15){
+                                ClickButtonState = (ClickButtonState+1)%2;//目前就只点2个按钮
+                                click_y = (int) Math.round(SelectedAreaStartY+SelectedAreaHeight*0.90);
                             }
-                            if (click_y > (int) Math.round(screenHeight*0.98)){
-                                //状态归位
-                                click_x = screenWidth/2;
-                                click_y = (int) Math.round(screenHeight*0.79);
+
+                            if (ClickButtonState == BUTTON_SURE){
+                                click_x = SelectedAreaStartX+SelectedAreaWidth/2;
+                            }else if (ClickButtonState == BUTTON_CONTINUE){
+                                click_x = SelectedAreaStartX+SelectedAreaWidth-30;
                             }
                             performClick(click_x,click_y);
-                            click_y += 50;
-                            handler.postDelayed(this,400);
+                            click_y += deltaY;
+//                            Log.d(TAG,"click_y:"+click_y);
+                            handler.postDelayed(this,500);
                         }
                     },1);
 
@@ -334,7 +356,7 @@ public class AutoClickService extends AccessibilityService {
      */
     private void performClick(int x, int y) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Log.d(TAG, "auto click x:" + x + "  y:" + y);
+//            Log.d(TAG, "auto click x:" + x + "  y:" + y);
             Path path = new Path();
             path.moveTo(x, y);
 
@@ -370,12 +392,16 @@ public class AutoClickService extends AccessibilityService {
             Log.d(TAG, "点击失败");
         }
     };
+
+    int StatusBarHeight = 0;
     public class ShowFloatingWindowBroadcastReceiver extends BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent){
             if (intent.getAction().equals("SHOW_FLOATING_WINDOW")){
-                Log.d(TAG, "接收到显示悬浮窗的广播");
+                StatusBarHeight = intent.getIntExtra("StatusBarHeight",0);//获取顶部状态栏的高度来补偿点击纵坐标的偏差
                 mFloatingView.setVisibility(View.VISIBLE);
+                Log.d(TAG, "接收到显示悬浮窗的广播");
+                Log.d(TAG, "顶部状态栏高度为："+StatusBarHeight);
             }
         }
     }

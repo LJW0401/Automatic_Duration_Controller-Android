@@ -64,4 +64,52 @@ public class DrawRectangleView extends View {
         }
         return true;
     }
+    /**
+     * @brief          获取矩形区域的起始的x坐标
+     * @author         小企鹅
+     * @return         startX : int 起始点的x坐标
+     */
+    public int getRectangleStartX() {
+        return (int) startX;
+    }
+    /**
+     * @brief          获取矩形区域的起始的y坐标
+     * @author         小企鹅
+     * @return         startY : 起始点的y坐标
+     */
+    public int getRectangleStartY() {
+        return (int) startY;
+    }
+    /**
+     * @brief          获取矩形区域的结束的x坐标
+     * @author         小企鹅
+     * @return         endX : int 结束点的x坐标
+     */
+    public int getRectangleEndX() {
+        return (int) endX;
+    }
+    /**
+     * @brief          获取矩形区域的结束的y坐标
+     * @author         小企鹅
+     * @return         endY : 结束点的y坐标
+     */
+    public int getRectangleEndY() {
+        return (int) endY;
+    }
+    /**
+     * @brief          获取矩形区域的宽度
+     * @author         小企鹅
+     * @return         Width : 矩形区域的宽度
+     */
+    public int getRectangleWidth() {
+        return Math.abs((int)(endX-startX));
+    }
+    /**
+     * @brief          获取矩形区域的高度
+     * @author         小企鹅
+     * @return         Width : 矩形区域的高度
+     */
+    public int getRectangleHeight() {
+        return Math.abs((int)(endY-startY));
+    }
 }

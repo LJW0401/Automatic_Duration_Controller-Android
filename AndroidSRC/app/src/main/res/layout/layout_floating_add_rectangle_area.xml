@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#5000FF00"
-    >
+    android:background="#5000FF00">
 
     <com.example.AutomaticDurationControl.DrawRectangleView
         android:id="@+id/View_drawRectangleArea"
@@ -22,4 +21,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.953" />
+
+    <Button
+        android:id="@+id/Button_SelectArea"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="框选区域"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.806"
+        tools:visibility="invisible" />
 </androidx.constraintlayout.widget.ConstraintLayout>

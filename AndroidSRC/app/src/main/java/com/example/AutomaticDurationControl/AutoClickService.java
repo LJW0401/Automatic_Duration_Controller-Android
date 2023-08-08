@@ -24,7 +24,11 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.view.View;
+
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 
 public class AutoClickService extends AccessibilityService {
@@ -72,6 +76,7 @@ public class AutoClickService extends AccessibilityService {
 
     View FloatingView_AddRectangleArea;
     DrawRectangleView View_drawRectangleArea;
+    Button Button_SelectArea;
     Button Button_Sure;
     /**
      * @brief          获取获取页面布局中的组件
@@ -89,6 +94,7 @@ public class AutoClickService extends AccessibilityService {
         FloatingView_AddRectangleArea = LayoutInflater.from(this).inflate(R.layout.layout_floating_add_rectangle_area, null);
         View_drawRectangleArea = (DrawRectangleView) FloatingView_AddRectangleArea.findViewById(R.id.View_drawRectangleArea);
         Button_Sure = (Button) FloatingView_AddRectangleArea.findViewById(R.id.Button_Sure);
+        Button_SelectArea = (Button) FloatingView_AddRectangleArea.findViewById(R.id.Button_SelectArea);
         Log.d(TAG, "已获取页面布局中的组件");
     }
 
@@ -150,6 +156,16 @@ public class AutoClickService extends AccessibilityService {
         Configure_Button_AddRectangleArea();
         Configure_TextView_Duration(layoutParams);
         Configure_Button_Sure();
+        Configure_Button_SelectArea();
+    }
+
+    /**
+     * @brief          设置框选区域的悬浮窗中'Button_SelectArea'按钮的相关属性
+     * @author         小企鹅
+     * @return         none
+     */
+    private void Configure_Button_SelectArea() {
+        Button_SelectArea.setVisibility(View.INVISIBLE);
     }
     int SelectedAreaStartX=0;
     int SelectedAreaStartY=0;
@@ -224,6 +240,8 @@ public class AutoClickService extends AccessibilityService {
             int BUTTON_SURE = 0;
             int BUTTON_CONTINUE = 1;
             int ClickButtonState = BUTTON_SURE;
+            Date StartTime;
+            Date EndTime;
             @Override
             public void onClick(View view) {
                 if (AutoClickState == IS_CLICKING){//切换到停止状态
@@ -231,12 +249,16 @@ public class AutoClickService extends AccessibilityService {
                     Button_Pause_Play.setImageDrawable(Drawable_ic_media_play);
                     Log.d(TAG, "停止自动点击");
                     handler.removeCallbacksAndMessages(null);
-
+                    TextView_Duration.setText("00:00:00");
+                    //获取结束的时间
+                    EndTime = new Date();
                 } else if (AutoClickState == IS_NOT_CLICKING) {//切换到自动点击状态
                     AutoClickState = IS_CLICKING;
                     Button_Pause_Play.setImageDrawable(Drawable_ic_media_pause);
                     Log.d(TAG, "正在自动点击");
                     Log.d(TAG, "end Y :"+(SelectedAreaStartY+SelectedAreaHeight));
+                    //获取开始的时间
+                    StartTime = new Date();
                     //初始化点击位置
                     click_x = SelectedAreaStartX+SelectedAreaWidth/2;
                     click_y = StatusBarHeight + SelectedAreaStartY + (int) Math.round(SelectedAreaHeight*0.82);
@@ -264,11 +286,37 @@ public class AutoClickService extends AccessibilityService {
                             handler.postDelayed(this,500);
                         }
                     },1);
-
+                    //更新运行时间
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            EndTime = new Date();
+                            // 计算时间差值（毫秒）
+                            long timeDifferenceInMillis = EndTime.getTime() - StartTime.getTime();
+                            // 将毫秒差值转换为其他时间单位（例如秒、分钟、小时）
+                            TextView_Duration.setText(formatTimeDifference(timeDifferenceInMillis));
+//                            TextView_Duration.setText(new SimpleDateFormat("HH:mm:ss").format(new Date()));
+                            handler.postDelayed(this,1000);
+                        }
+                    },10);
                 }
             }
         });
     }
+    /**
+     * @brief          格式化时间差
+     * @author         小企鹅
+     * @param[in]      x[long] : 时间差
+     * @return         formated string[String] : 格式化后的字符串
+     */
+    public static String formatTimeDifference(long timeDifferenceInMillis) {
+        long hours = TimeUnit.MILLISECONDS.toHours(timeDifferenceInMillis);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(timeDifferenceInMillis) % 60;
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(timeDifferenceInMillis) % 60;
+
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+
     /**
      * @brief          设置悬浮窗中TextView_Duration的相关属性
      * @author         小企鹅
@@ -341,6 +389,8 @@ public class AutoClickService extends AccessibilityService {
         // 设置悬浮窗视图为不可见
         mFloatingView.setVisibility(View.INVISIBLE);
         FloatingView_AddRectangleArea.setVisibility(View.INVISIBLE);
+        //重置时间
+        TextView_Duration.setText("00:00:00");
     }
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
